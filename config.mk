@@ -2,7 +2,7 @@ _VERSION = 0.3.1
 VERSION = $(shell ./generate-version.sh $(_VERSION))
 
 # paths
-PREFIX = /usr/local
+PREFIX = ${HOME}/.local
 MANDIR = $(PREFIX)/share/man
 
 # Default compile flags (overridable by environment)
