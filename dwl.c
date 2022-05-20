@@ -2104,6 +2104,9 @@ sigchld(int unused)
 void
 spawn(const Arg *arg)
 {
+	if(((char**)arg->v)[0] == NULL)
+		return;
+
 	if (fork() == 0) {
 		dup2(STDERR_FILENO, STDOUT_FILENO);
 		setsid();

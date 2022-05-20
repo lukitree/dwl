@@ -1,6 +1,8 @@
 /* appearance */
+#include <xkbcommon/xkbcommon-keysyms.h>
+#include "myapps.h"
 static const int sloppyfocus        = 1;  /* focus follows mouse */
-static const unsigned int borderpx  = 1;  /* border pixel of windows */
+static const unsigned int borderpx  = 4;  /* border pixel of windows */
 static const int lockfullscreen     = 1;  /* 1 will force focus on the fullscreen window */
 static const float rootcolor[]      = {0.3, 0.3, 0.3, 1.0};
 static const float bordercolor[]    = {0.5, 0.5, 0.5, 1.0};
@@ -21,8 +23,8 @@ static const Rule rules[] = {
 static const Layout layouts[] = {
 	/* symbol     arrange function */
 	{ "[]=",      tile },
-	{ "><>",      NULL },    /* no layout function means floating behavior */
 	{ "[M]",      monocle },
+	{ "><>",      NULL },    /* no layout function means floating behavior */
 };
 
 /* monitors */
@@ -52,56 +54,82 @@ static const int tap_to_click = 1;
 static const int natural_scrolling = 0;
 
 /* If you want to use the windows key change this to WLR_MODIFIER_LOGO */
-#define MODKEY WLR_MODIFIER_ALT
+/*#define ShiftMask WLR_MODIFIER_SHIFT*/
+#define AltMask WLR_MODIFIER_ALT
+/*#define ControlMask WLR_MODIFIER_CTRL*/
+#define MODKEY WLR_MODIFIER_LOGO
 #define TAGKEYS(KEY,SKEY,TAG) \
 	{ MODKEY,                    KEY,            view,            {.ui = 1 << TAG} }, \
-	{ MODKEY|WLR_MODIFIER_CTRL,  KEY,            toggleview,      {.ui = 1 << TAG} }, \
-	{ MODKEY|WLR_MODIFIER_SHIFT, SKEY,           tag,             {.ui = 1 << TAG} }, \
-	{ MODKEY|WLR_MODIFIER_CTRL|WLR_MODIFIER_SHIFT,SKEY,toggletag, {.ui = 1 << TAG} }
+	{ MODKEY|ControlMask,           KEY,            toggleview,      {.ui = 1 << TAG} }, \
+	{ MODKEY|ShiftMask,          SKEY,           tag,             {.ui = 1 << TAG} }, \
+	{ MODKEY|ControlMask|ShiftMask, SKEY,toggletag, {.ui = 1 << TAG} }
 
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
 
 /* commands */
-static const char *termcmd[] = { "alacritty", NULL };
-static const char *menucmd[] = { "bemenu-run", NULL };
+static const char *termcmd[] = { myterm, NULL };
+static const char *menucmd[] = { "wofi", "--show", "drun", NULL };
+static const char *emojicmd[] = { NULL };
+static const char *rangercmd[] = { myterm, "-e", "ranger", NULL };
+static const char *thunarcmd[] = { "thunar", NULL };
+static const char *browsercmd[] = { mybrowser, NULL };
+static const char *screenlockcmd[] = { "waylock", NULL };
+static const char scratchpadname[] = "scratchpad";
+static const char *scratchpadcmd[] = { myterm, "-t", scratchpadname, NULL };
+static const char *printscreencmd[] = { NULL };
 
 static const Key keys[] = {
 	/* Note that Shift changes certain key codes: c -> C, 2 -> at, etc. */
-	/* modifier                  key                 function        argument */
-	{ MODKEY,                    XKB_KEY_p,          spawn,          {.v = menucmd} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Return,     spawn,          {.v = termcmd} },
-	{ MODKEY,                    XKB_KEY_j,          focusstack,     {.i = +1} },
-	{ MODKEY,                    XKB_KEY_k,          focusstack,     {.i = -1} },
-	{ MODKEY,                    XKB_KEY_i,          incnmaster,     {.i = +1} },
-	{ MODKEY,                    XKB_KEY_d,          incnmaster,     {.i = -1} },
-	{ MODKEY,                    XKB_KEY_h,          setmfact,       {.f = -0.05} },
-	{ MODKEY,                    XKB_KEY_l,          setmfact,       {.f = +0.05} },
-	{ MODKEY,                    XKB_KEY_Return,     zoom,           {0} },
-	{ MODKEY,                    XKB_KEY_Tab,        view,           {0} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_C,          killclient,     {0} },
-	{ MODKEY,                    XKB_KEY_t,          setlayout,      {.v = &layouts[0]} },
-	{ MODKEY,                    XKB_KEY_f,          setlayout,      {.v = &layouts[1]} },
-	{ MODKEY,                    XKB_KEY_m,          setlayout,      {.v = &layouts[2]} },
-	{ MODKEY,                    XKB_KEY_space,      setlayout,      {0} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_space,      togglefloating, {0} },
-	{ MODKEY,                    XKB_KEY_e,         togglefullscreen, {0} },
-	{ MODKEY,                    XKB_KEY_0,          view,           {.ui = ~0} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_parenright, tag,            {.ui = ~0} },
-	{ MODKEY,                    XKB_KEY_comma,      focusmon,       {.i = WLR_DIRECTION_LEFT} },
-	{ MODKEY,                    XKB_KEY_period,     focusmon,       {.i = WLR_DIRECTION_RIGHT} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_less,       tagmon,         {.i = WLR_DIRECTION_LEFT} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_greater,    tagmon,         {.i = WLR_DIRECTION_RIGHT} },
-	TAGKEYS(          XKB_KEY_1, XKB_KEY_exclam,                     0),
-	TAGKEYS(          XKB_KEY_2, XKB_KEY_at,                         1),
-	TAGKEYS(          XKB_KEY_3, XKB_KEY_numbersign,                 2),
-	TAGKEYS(          XKB_KEY_4, XKB_KEY_dollar,                     3),
-	TAGKEYS(          XKB_KEY_5, XKB_KEY_percent,                    4),
-	TAGKEYS(          XKB_KEY_6, XKB_KEY_asciicircum,                5),
-	TAGKEYS(          XKB_KEY_7, XKB_KEY_ampersand,                  6),
-	TAGKEYS(          XKB_KEY_8, XKB_KEY_asterisk,                   7),
-	TAGKEYS(          XKB_KEY_9, XKB_KEY_parenleft,                  8),
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Q,          quit,           {0} },
+	/* modifier            key                 function        argument */
+	{ MODKEY,              XKB_KEY_p,          spawn,            {.v = menucmd} },
+	{ MODKEY,              XKB_KEY_period,     spawn,            {.v = emojicmd} },
+	{ MODKEY,              XKB_KEY_e,          spawn,            {.v = rangercmd} },
+	{ MODKEY|ShiftMask,    XKB_KEY_E,          spawn,            {.v = thunarcmd} },
+	{ MODKEY,              XKB_KEY_o,          spawn,            {.v = browsercmd} },
+	{ MODKEY|ShiftMask,    XKB_KEY_Return,     spawn,            {.v = termcmd} },
+	{ MODKEY,              XKB_KEY_Escape,     spawn,            {.v = scratchpadcmd} },
+	{ MODKEY,              XKB_KEY_l,          spawn,            {.v = screenlockcmd} },
+	{ MODKEY,              XKB_KEY_Print,      spawn,            {.v = printscreencmd} },
+	
+	/* Window Management */
+	/*{ MODKEY,              XKB_KEY_e,          togglefullscreen, {0} }, TODO: need to find another keybind */
+	{ AltMask,             XKB_KEY_Tab,        focusstack,       {.i = +1} },
+	{ AltMask|ShiftMask,   XKB_KEY_Tab,        focusstack,       {.i = -1} },
+	{ MODKEY|ShiftMask,    XKB_KEY_comma,      incnmaster,       {.i = +1} },
+	{ MODKEY|ShiftMask,    XKB_KEY_period,     incnmaster,       {.i = -1} },
+	{ MODKEY,              XKB_KEY_j,          setmfact,         {.f = -0.05} },
+	{ MODKEY,              XKB_KEY_k,          setmfact,         {.f = +0.05} },
+	{ MODKEY,              XKB_KEY_Return,     zoom,             {0} },
+	/*{ MODKEY,              XKB_KEY_Tab,        view,             {0} }, TODO: What is this for? */
+	{ MODKEY|ControlMask,  XKB_KEY_C,          killclient,       {0} },
+	{ MODKEY,              XKB_KEY_t,          setlayout,        {.v = &layouts[0]} },
+	{ MODKEY,              XKB_KEY_m,          setlayout,        {.v = &layouts[1]} },
+	{ MODKEY,              XKB_KEY_f,          setlayout,        {.v = &layouts[2]} },
+	{ MODKEY,              XKB_KEY_space,      setlayout,        {0} },
+	{ MODKEY|ShiftMask,    XKB_KEY_space,      togglefloating,   {0} },
+	{ MODKEY,              XKB_KEY_0,          view,             {.ui = ~0} },
+	{ MODKEY|ShiftMask,    XKB_KEY_parenright, tag,              {.ui = ~0} },
+	
+	/* Tagkeys */
+	TAGKEYS(    XKB_KEY_1, XKB_KEY_exclam,                       0),
+	TAGKEYS(    XKB_KEY_2, XKB_KEY_at,                           1),
+	TAGKEYS(    XKB_KEY_3, XKB_KEY_numbersign,                   2),
+	TAGKEYS(    XKB_KEY_4, XKB_KEY_dollar,                       3),
+	TAGKEYS(    XKB_KEY_5, XKB_KEY_percent,                      4),
+	TAGKEYS(    XKB_KEY_6, XKB_KEY_asciicircum,                  5),
+	TAGKEYS(    XKB_KEY_7, XKB_KEY_ampersand,                    6),
+	TAGKEYS(    XKB_KEY_8, XKB_KEY_asterisk,                     7),
+	TAGKEYS(    XKB_KEY_9, XKB_KEY_parenleft,                    8),
+	
+	/* Monitor Keys */
+	{ MODKEY,              XKB_KEY_a,          focusmon,         {.i = WLR_DIRECTION_LEFT} },
+	{ MODKEY,              XKB_KEY_d,          focusmon,         {.i = WLR_DIRECTION_RIGHT} },
+	{ MODKEY|ShiftMask,    XKB_KEY_A,          tagmon,           {.i = WLR_DIRECTION_LEFT} },
+	{ MODKEY|ShiftMask,    XKB_KEY_D,          tagmon,           {.i = WLR_DIRECTION_RIGHT} },
+	
+	/* Kill DWL */
+	{ MODKEY|ShiftMask,    XKB_KEY_Q,          quit,             {0} },
 
 	/* Ctrl-Alt-Backspace and Ctrl-Alt-Fx used to be handled by X server */
 	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT,XKB_KEY_Terminate_Server, quit, {0} },
