@@ -54,9 +54,7 @@ static const int tap_to_click = 1;
 static const int natural_scrolling = 0;
 
 /* If you want to use the windows key change this to WLR_MODIFIER_LOGO */
-/*#define ShiftMask WLR_MODIFIER_SHIFT*/
 #define AltMask WLR_MODIFIER_ALT
-/*#define ControlMask WLR_MODIFIER_CTRL*/
 #define MODKEY WLR_MODIFIER_LOGO
 #define TAGKEYS(KEY,SKEY,TAG) \
 	{ MODKEY,                    KEY,            view,            {.ui = 1 << TAG} }, \
@@ -102,7 +100,7 @@ static const Key keys[] = {
 	{ MODKEY,              XKB_KEY_k,          setmfact,         {.f = +0.05} },
 	{ MODKEY,              XKB_KEY_Return,     zoom,             {0} },
 	/*{ MODKEY,              XKB_KEY_Tab,        view,             {0} }, TODO: What is this for? */
-	{ MODKEY|ControlMask,  XKB_KEY_C,          killclient,       {0} },
+	{ MODKEY|ControlMask,  XKB_KEY_c,          killclient,       {0} },
 	{ MODKEY,              XKB_KEY_t,          setlayout,        {.v = &layouts[0]} },
 	{ MODKEY,              XKB_KEY_m,          setlayout,        {.v = &layouts[1]} },
 	{ MODKEY,              XKB_KEY_f,          setlayout,        {.v = &layouts[2]} },
